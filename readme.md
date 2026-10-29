@@ -45,7 +45,7 @@ The system employs a dual-event lifecycle to maintain continuous alignment betwe
 ## 🧰 Tech Stack
 
 * **Java**: 17+
-* **Framework**: Spring Boot 3.x (Spring Web, Spring Data JPA, Spring for Apache Kafka)
+* **Framework**: Spring Boot 4.x (Spring Web, Spring Data JPA, Spring for Apache Kafka)
 * **Database**: PostgreSQL 15
 * **Messaging**: Apache Kafka & Zookeeper
 * **Monitoring**: Kafka UI (`provectuslabs/kafka-ui`)

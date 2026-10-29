@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Docker local data / Volumes ###
+.env
+docker-data/
+postgres-data/
+kafka-data/
