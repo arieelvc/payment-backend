@@ -1,8 +1,9 @@
-package com.portfolio.payment_backend.kafka;
+package com.portfolio.payment_backend.kafka.consumer;
 
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import com.portfolio.payment_backend.kafka.producer.PaymentProducer;
 import com.portfolio.payment_backend.model.Payment;
 import com.portfolio.payment_backend.repository.PaymentRepository;
 

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.portfolio.payment_backend.dto.PaymentRequestDTO;
-import com.portfolio.payment_backend.kafka.PaymentProducer;
+import com.portfolio.payment_backend.kafka.producer.PaymentProducer;
 import com.portfolio.payment_backend.model.Payment;
 import com.portfolio.payment_backend.repository.PaymentRepository;
 

@@ -1,4 +1,4 @@
-package com.portfolio.payment_backend.kafka;
+package com.portfolio.payment_backend.kafka.producer;
 
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
