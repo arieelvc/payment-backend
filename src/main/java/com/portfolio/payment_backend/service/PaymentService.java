@@ -23,7 +23,7 @@ public class PaymentService {
     public Payment processPayment(PaymentRequestDTO requestDTO) {
         log.info("Processing new payment with transaction ID: {}", requestDTO.getTransactionId());
 
-        // 1. Mapear DTO a la Entidad Payment
+        // 1. Map the DTO to the Payment entity
         Payment payment = Payment.builder()
                 .transactionId(requestDTO.getTransactionId())
                 .amount(requestDTO.getAmount())
@@ -31,11 +31,11 @@ public class PaymentService {
                 .status("PENDING")
                 .build();
 
-        // 2. Guardar en PostgreSQL
+        // 2. Save in PostgreSQL
         Payment savedPayment = paymentRepository.save(payment);
         log.info("Payment saved with ID: {} and status: PENDING", savedPayment.getId());
 
-        // 3. Enviar evento a Kafka para procesamiento asíncrono
+        // 3. Send the event to Kafka for asynchronous processing
         paymentProducer.sendPaymentEvent(savedPayment);
 
         return savedPayment;

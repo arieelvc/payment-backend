@@ -1,6 +1,6 @@
 # Event-Driven Payment Processing Microservice
 
-An asynchronous, event-driven payment processing microservice built with **Spring Boot 3**, **Apache Kafka**, and **PostgreSQL**. The service leverages event sourcing principles to track the entire payment lifecycle—from creation (`PENDING`) to final fulfillment (`COMPLETED`)—ensuring full traceability and auditability.
+An asynchronous, event-driven payment processing microservice built with **Spring Boot 4**, **Apache Kafka**, and **PostgreSQL**. The service leverages event sourcing principles to track the entire payment lifecycle—from creation (`PENDING`) to final fulfillment (`COMPLETED`)—ensuring full traceability and auditability.
 
 ---
 
@@ -42,7 +42,7 @@ The system employs a dual-event lifecycle to maintain continuous alignment betwe
 
 ---
 
-## 🧰 Tech Stack
+## Tech Stack
 
 * **Java**: 17+
 * **Framework**: Spring Boot 4.x (Spring Web, Spring Data JPA, Spring for Apache Kafka)
@@ -54,7 +54,7 @@ The system employs a dual-event lifecycle to maintain continuous alignment betwe
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -65,12 +65,12 @@ Ensure you have the following installed locally:
 
 ---
 
-### 📦 Infrastructure Setup
+### Infrastructure Setup
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/payment-microservice.git
-   cd payment-microservice
+   gh repo clone arieelvc/payment-backend
+   cd payment-backend
    ```
 
 2. **Start the environment with Docker Compose:**
@@ -91,9 +91,9 @@ Ensure you have the following installed locally:
 
 ---
 
-### ⚙️ Application Configuration
+###  Application Configuration
 
-Check your `src/main/resources/application.properties` (or `application.yml`) to ensure connection parameters match your setup:
+Check your `application.yml` to ensure connection parameters match your setup:
 
 ```properties
 server.port=8080
@@ -116,7 +116,7 @@ spring.jackson.serialization.write-dates-as-timestamps=false
 
 ---
 
-### 🏃 Running the Application
+### Running the Application
 
 Build and start the Spring Boot service:
 
@@ -128,7 +128,7 @@ The application will launch on `http://localhost:8080`.
 
 ---
 
-## 📡 API Endpoints & Usage
+##  API Endpoints & Usage
 
 ### 1. Create a Payment
 
@@ -144,7 +144,7 @@ The application will launch on `http://localhost:8080`.
 }
 ```
 
-**Sample Response (`201 Created` / `200 OK`):**
+**Sample Response ( `200 OK`):**
 ```json
 {
   "id": 1,
@@ -182,7 +182,7 @@ docker exec -it kafka /usr/bin/kafka-console-consumer --bootstrap-server localho
 ## 🛠️ Project Structure
 
 ```
-src/main/java/com/example/payment
+src/main/java/com/portfolio/payment_backend
 ├── config/             # Kafka producer and consumer configurations
 ├── controller/         # REST Controllers handling incoming payments
 ├── dto/                # Data Transfer Objects

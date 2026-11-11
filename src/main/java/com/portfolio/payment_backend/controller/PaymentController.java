@@ -27,14 +27,14 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final PaymentRepository paymentRepository;
 
-    // Endpoint POST para iniciar un pago
+    // POST endpoint to initiate a payment
     @PostMapping
     public ResponseEntity<Payment> createPayment(@Valid @RequestBody PaymentRequestDTO requestDTO) {
         Payment createdPayment = paymentService.processPayment(requestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPayment);
     }
 
-    // Endpoint GET para listar todos los pagos y ver sus estados (PENDING ->
+    // GET endpoint to list all payments and view their statuses (PENDING ->
     // COMPLETED)
     @GetMapping
     public ResponseEntity<List<Payment>> getAllPayments() {
