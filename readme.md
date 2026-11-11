@@ -1,23 +1,23 @@
 # Event-Driven Payment Processing Microservice
 
-An asynchronous, event-driven payment processing microservice built with **Spring Boot 4**, **Apache Kafka**, and **PostgreSQL**. The service leverages event sourcing principles to track the entire payment lifecycle—from creation (`PENDING`) to final fulfillment (`COMPLETED`)—ensuring full traceability and auditability.
+An asynchronous payment processing microservice built with **Spring Boot 4**, **Apache Kafka**, and **PostgreSQL**. Payment records are stored in PostgreSQL, while Kafka messages trigger asynchronous processing and communicate status snapshots. The database stores the current payment state; this implementation does not use event sourcing.
 
 ---
 
-## 🏗️ Architecture & Event Flow
+## Architecture & Event Flow
 
-The system employs a dual-event lifecycle to maintain continuous alignment between database state and Kafka topics without transactional mismatches.
+The service publishes a `Payment` payload to Kafka after saving a new payment as `PENDING`. A Kafka consumer simulates processing, updates the record to `COMPLETED` in PostgreSQL, and publishes the updated `Payment` payload to the same topic. The database write and Kafka publish are separate operations and are not coordinated by an outbox or a distributed transaction, so the system does not guarantee atomic consistency between them.
 
 ```
  [ Client / Postman ]
           │
           ▼
-1. POST /payments
+1. POST /api/payments
           │
           ▼
    [ Payment REST API ] ──(Save PENDING)──► [ PostgreSQL DB ]
           │
-          ├── 2. Publish PaymentCreatedEvent ("PENDING")
+          └── 2. Publish Payment payload ("PENDING")
           │
           ▼
    [ Kafka Topic: payment-events ]
@@ -27,18 +27,17 @@ The system employs a dual-event lifecycle to maintain continuous alignment betwe
           │
           ├── (Simulate processing / gateway integration)
           ├── 4. Update status to "COMPLETED" ──► [ PostgreSQL DB ]
-          │
-          └── 5. Publish PaymentCompletedEvent ("COMPLETED")
+          └── 5. Publish updated Payment payload ("COMPLETED")
                   │
                   ▼
-         [ Kafka Topic: payment-events ] ──► (External Consumers / Audit Services)
+         [ Kafka Topic: payment-events ] ──► (Other topic consumers, if configured)
 ```
 
 1. **Transaction Initiation**: A `POST` request creates a new payment record with a `PENDING` status in PostgreSQL.
-2. **First Event (`PENDING`)**: The producer emits an initial event to the `payment-events` topic.
-3. **Event Consumption**: `PaymentConsumer` picks up the `PENDING` event and simulates transaction processing.
+2. **Initial Message (`PENDING`)**: The producer sends the saved `Payment` object to the `payment-events` topic.
+3. **Message Consumption**: `PaymentConsumer` receives the payment, ignores it if it is already `COMPLETED`, and simulates processing.
 4. **State Transition**: The consumer updates the database record status to `COMPLETED`.
-5. **Second Event (`COMPLETED`)**: The consumer publishes a follow-up event to notify downstream consumers that the payment was successfully processed.
+5. **Updated Message (`COMPLETED`)**: The consumer sends the updated `Payment` object to the same topic. Since the consumer ignores completed payments, this message does not trigger another state transition in this consumer.
 
 ---
 
@@ -99,7 +98,7 @@ Check your `application.yml` to ensure connection parameters match your setup:
 server.port=8080
 
 # PostgreSQL Configuration
-spring.datasource.url=jdbc:postgresql://localhost:5432/payment_db
+spring.datasource.url=jdbc:postgresql://localhost:5433/payment_db
 spring.datasource.username=portfolio
 spring.datasource.password=portfolio
 spring.jpa.hibernate.ddl-auto=update
@@ -132,7 +131,7 @@ The application will launch on `http://localhost:8080`.
 
 ### 1. Create a Payment
 
-* **Endpoint**: `POST /payments`
+* **Endpoint**: `POST /api/payments`
 * **Content-Type**: `application/json`
 
 **Sample Request Body:**
@@ -144,7 +143,7 @@ The application will launch on `http://localhost:8080`.
 }
 ```
 
-**Sample Response ( `200 OK`):**
+**Sample Response ( `201 created`):**
 ```json
 {
   "id": 1,
@@ -179,7 +178,7 @@ docker exec -it kafka /usr/bin/kafka-console-consumer --bootstrap-server localho
 
 ---
 
-## 🛠️ Project Structure
+## Project Structure
 
 ```
 src/main/java/com/portfolio/payment_backend
@@ -187,15 +186,16 @@ src/main/java/com/portfolio/payment_backend
 ├── controller/         # REST Controllers handling incoming payments
 ├── dto/                # Data Transfer Objects
 ├── model/              # JPA Entities (Payment)
-├── producer/           # Kafka Producer publishing payment events
-├── consumer/           # Kafka Consumer processing async workflows
+├── kafka/
+    ├── producer/           # Kafka Producer publishing payment events
+    ├── consumer/           # Kafka Consumer processing async workflows
 ├── repository/         # Spring Data JPA Repositories
 └── service/            # Core business logic
 ```
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
