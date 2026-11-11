@@ -78,7 +78,7 @@ Ensure you have the following installed locally:
    ```
 
    This spins up the following services:
-   * **PostgreSQL** on port `5432`
+   * **PostgreSQL** on port `5433` (host; container port `5432`)
    * **Zookeeper** on port `2181`
    * **Kafka Broker** on ports `9092` (host) and `29092` (internal network)
    * **Kafka UI** on port `8081`
@@ -90,28 +90,44 @@ Ensure you have the following installed locally:
 
 ---
 
-###  Application Configuration
+### Application Configuration
 
-Check your `application.yml` to ensure connection parameters match your setup:
+The application configuration in `src/main/resources/application.yml` uses the following settings:
 
-```properties
-server.port=8080
+```yaml
+server:
+  port: 8080
 
-# PostgreSQL Configuration
-spring.datasource.url=jdbc:postgresql://localhost:5433/payment_db
-spring.datasource.username=portfolio
-spring.datasource.password=portfolio
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/payments_db
+    username: portfolio
+    password: portfolio
+    driver-class-name: org.postgresql.Driver
 
-# Kafka Configuration
-spring.kafka.bootstrap-servers=localhost:9092
-spring.kafka.consumer.group-id=payment-group
-spring.kafka.consumer.auto-offset-reset=earliest
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
-# JSON Serialization Configuration
-spring.jackson.serialization.write-dates-as-timestamps=false
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: payment-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
 ```
+
+The database credentials shown above are for local development and match the Docker Compose defaults. Use externally managed credentials in production.
 
 ---
 
