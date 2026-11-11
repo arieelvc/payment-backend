@@ -125,6 +125,20 @@ mvn clean spring-boot:run
 
 The application will launch on `http://localhost:8080`.
 
+### Swagger UI
+
+Open the interactive API documentation at:
+
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+The generated OpenAPI specification is available at:
+
+```
+http://localhost:8080/v3/api-docs
+```
+
 ---
 
 ##  API Endpoints & Usage

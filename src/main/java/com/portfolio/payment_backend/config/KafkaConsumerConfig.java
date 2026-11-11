@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
@@ -15,32 +15,43 @@ import org.springframework.util.backoff.FixedBackOff;
 @Configuration
 public class KafkaConsumerConfig {
     @Bean
+    public NewTopic paymentEventsTopic() {
+        return TopicBuilder.name("payment-events")
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public DefaultErrorHandler kafkaErrorHandler(KafkaOperations<Object, Object> template) {
+        // Route failed messages to the original topic with the .DLT suffix after
+        // retries are exhausted
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(template,
+                (r, e) -> new TopicPartition(r.topic() + ".DLT", r.partition()));
+
+        // 2 retries with a short interval for faster testing
+        FixedBackOff backOff = new FixedBackOff(500L, 2L);
+
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
+
+        // Exceptions that should not be retried (optional)
+        // errorHandler.addNotRetryableExceptions(IllegalArgumentException.class);
+
+        return errorHandler;
+    }
+
+    @Bean
     public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(
             ConsumerFactory<String, Object> consumerFactory,
-            KafkaTemplate<String, Object> kafkaTemplate) {
+            DefaultErrorHandler kafkaErrorHandler) {
 
         ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
 
-        // 1. Recoverer to publish failed messages to the DLT (Dead Letter Topic)
-        // By default, it appends ".DLT" to the original topic name (e.g.,
-        // payment-events.DLT)
-        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate,
-                (record, ex) -> new TopicPartition(record.topic() + ".DLT", record.partition()));
-
-        // 2. Retry policy: 3 attempts with a 1-second interval
-        DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, new FixedBackOff(1000L, 3L));
-
-        factory.setCommonErrorHandler(errorHandler);
+        // IMPORTANT: Connect the error handler to the factory to enable retries and the
+        // DLT
+        factory.setCommonErrorHandler(kafkaErrorHandler);
 
         return factory;
-    }
-
-    @Bean
-    public NewTopic paymentEventsTopic() {
-        return TopicBuilder.name("payment-events-topic")
-                .partitions(1)
-                .replicas(1)
-                .build();
     }
 }

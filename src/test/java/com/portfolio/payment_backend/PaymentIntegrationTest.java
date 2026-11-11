@@ -19,6 +19,15 @@ public class PaymentIntegrationTest extends AbstractIntegrationTest {
     private PaymentRepository paymentRepository;
 
     @Test
+    void shouldExposeOpenApiDocumentation() {
+        ResponseEntity<String> response = restTemplate.getForEntity("/v3/api-docs", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).contains("\"title\":\"Payment Processing API\"");
+        assertThat(response.getBody()).contains("\"/api/payments\"");
+    }
+
+    @Test
     void shouldCreatePaymentSuccessfully() {
         // Given
         Payment newPayment = new Payment();
