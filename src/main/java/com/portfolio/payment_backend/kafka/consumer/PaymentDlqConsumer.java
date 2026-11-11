@@ -18,7 +18,5 @@ public class PaymentDlqConsumer {
                 paymentEvent.getAmount(),
                 paymentEvent.getCurrency());
 
-        // Here you could trigger external notifications, store in an audit log table,
-        // etc.
     }
 }
